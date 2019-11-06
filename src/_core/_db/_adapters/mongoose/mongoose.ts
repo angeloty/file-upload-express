@@ -1,9 +1,8 @@
 import { IModelFields } from './../../../_base/_data/_interfaces/descriptors';
-import { MongoseModelDefinition } from './../mongoose/model/mongooseModelDef';
-import { Model } from '_core/_base/_data/model';
+import { MongooseModelDefinition } from './../mongoose/model/mongooseModelDef';
 import { AdapterModelDefinition } from '../adapterModelDef';
-import Adapter from "../../adapter";
-import * as mongoose from "_core/_db/_adapters/mongoose/mongoose";
+import Adapter from '../../adapter';
+import * as mongoose from 'mongoose';
 
 export class Mongoose extends Adapter {
   public initialize(): Mongoose {
@@ -15,27 +14,27 @@ export class Mongoose extends Adapter {
     return this;
   }
 
-  build(): Promise<Adapter>  {
-    
+  public build(): Promise<Adapter> {
+    return null;
   }
 
-  buildModelDef(model: IModelFields): AdapterModelDefinition {
-    return new MongoseModelDefinition(model);
+  public buildModelDef(model: IModelFields): AdapterModelDefinition {
+    return new MongooseModelDefinition(model);
   }
 
   public async findById(id: any): Promise<any> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   public async findBy(filter: any): Promise<any[]> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   public async save(model: any): Promise<any> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   public async update(model: any): Promise<any> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   public remove(model: any): Promise<any> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 }

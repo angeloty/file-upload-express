@@ -1,10 +1,11 @@
-import { Module } from "./_core/_base/module";
-import * as bodyParser from "body-parser";
-import * as cookieParser from "cookie-parser";
-import * as express from "express";
+import { Module } from './_core/_base/module';
+import * as bodyParser from 'body-parser';
+import * as cookieParser from 'cookie-parser';
+import * as express from 'express';
 
-import errorMiddleware from "./_core/_auth/_middlewares/error.middleware";
-import { DB } from "_core/_db/db";
+import errorMiddleware from './_core/_auth/_middlewares/error.middleware';
+import { DB } from '_core/_db/db';
+import { appContent } from 'config/constants';
 
 class App {
   public app: express.Application;
@@ -25,7 +26,7 @@ class App {
   }
 
   public initializeModules(modules: Module[]) {
-    modules.forEach(module => {
+    modules.forEach((module: Module) => {
       module.init(this.app);
     });
   }
@@ -43,8 +44,8 @@ class App {
     this.app.use(errorMiddleware);
   }
 
-  private connectToTheDatabase() {
-    process.dbAdapter = this.app.dbAdapter = this.db.connect();    
+  private async connectToTheDatabase() {
+    appContent.db.adapter = await this.db.connect();
   }
 }
 

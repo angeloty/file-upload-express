@@ -1,3 +1,3 @@
 export abstract class AdapterModelDefinition {
-  modelDef: any;
+  protected modelDef: any;
 }

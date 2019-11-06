@@ -1,4 +1,4 @@
-import { Router } from "../router";
+import { Router } from 'express';
 
 export abstract class Controller {
   protected router: Router;
@@ -7,11 +7,11 @@ export abstract class Controller {
     this.initializeRoutes();
   }
 
-  protected abstract initializeRoutes(): void;
-
   public getRouter(): Router {
     return this.router;
   }
+
+  protected abstract initializeRoutes(): void;
 }
 
 export default Controller;

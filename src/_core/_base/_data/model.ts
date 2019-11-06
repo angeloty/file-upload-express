@@ -1,90 +1,50 @@
+import { appContent } from './../../../config/constants';
 import { AdapterModelDefinition } from './../../_db/_adapters/adapterModelDef';
-import { InvalidModelDataException } from "./../_exceptions/invalidDataException";
-import { Adapter } from "../../_db/adapter";
+import { InvalidModelDataException } from './../_exceptions/invalidDataException';
+import { Adapter } from '../../_db/adapter';
 import {
   IModelFields,
   IModelData,
   IModelError
-} from "./_interfaces/descriptors";
+} from './_interfaces/descriptors';
 
 export abstract class Model implements IModelData {
-  protected _$adapter: Adapter = process.dbAdapter;
+  public static create<T>(this: new (d: IModelData) => T, data: IModelData): T {
+    const object = Object.assign(new this(data), {});
+    return object;
+  }
+  // tslint:disable:variable-name
+  // tslint:disable:function-name
+  protected _$adapter: Adapter = appContent.db.adapter;
   protected _$data: IModelData = {};
   protected _$fields: IModelFields = {};
   protected _$errors: IModelError[] = [];
-  protected _$adapterModelDefinition:AdapterModelDefinition;
+  protected _$adapterModelDefinition: AdapterModelDefinition;
+
   private _$$props: string[] = [
-    "_$adapter",
-    "_$data",
-    "_$fields",
-    "_$errors",
-    "_$$props",
-    "_$build",
-    "_$createProps",
-    "_$validate",
-    "set",
-    "find",
-    "findBy",
-    "save",
-    "update",
-    "remove"
+    '_$adapter',
+    '_$data',
+    '_$fields',
+    '_$errors',
+    '_$$props',
+    '_$build',
+    '_$createProps',
+    '_$validate',
+    'set',
+    'find',
+    'findBy',
+    'save',
+    'update',
+    'remove'
   ];
 
   constructor(values?: IModelData) {
     this._$build();
-    this.set(values);    
-  }
-
-  static create<T>(this: new (d: IModelData) => T, data: IModelData): T {
-    const object = Object.assign(new this(data), {});
-    return object;
-  }
-
-  private _$build(): void {
-    if (this._$fields) {
-      for (let field in this._$fields) {
-        this._$createProps(field);
-      }
-    }
-    this._$adapterModelDefinition = this._$adapter.buildModelDef(this._$fields);
-  }
-
-  private _$createProps(key: string): void {
-    Object.defineProperty(this, key, {
-      get: () => {
-        return this._$data[key];
-      },
-      set: (value: any) => {
-        if (this._$data[key] !== value) {
-          try {
-            this._$validate(key, value);
-            this._$data[key] = value;
-          } catch (e) {
-            throw new InvalidModelDataException(key, e.message);
-          }
-        }
-      }
-    });
-  }
-
-  private _$validate(field: string, value: any): boolean {
-    return true;
-  }
-
-  protected set(values: IModelData): Model {
-    const keys: string[] = Object.keys(values);
-    for (let key of keys) {
-      if (!this._$$props.some((k: string) => k == key)) {
-        if (this._$fields[key]) {
-          Object.assign(this, { [key]: values[key] });
-        }
-      }
-    }
-    return this;
+    this.set(values);
   }
 
   public toObject() {
-    let object: { [key: string]: any } = {};
+    const object: { [key: string]: any } = {};
     const keys = Object.keys(this._$fields);
     for (let key of keys) {
       if (this._$data[key]) {
@@ -98,7 +58,7 @@ export abstract class Model implements IModelData {
   }
 
   public toJSON() {
-    let object = this.toObject();
+    const object = this.toObject();
     return object;
   }
 
@@ -140,6 +100,51 @@ export abstract class Model implements IModelData {
     } catch (e) {
       throw e;
     }
+  }
+
+  protected set(values: IModelData): Model {
+    const keys: string[] = Object.keys(values);
+    for (let key of keys) {
+      if (!this._$$props.some((k: string) => k == key)) {
+        if (this._$fields[key]) {
+          Object.assign(this, { [key]: values[key] });
+        }
+      }
+    }
+    return this;
+  }
+
+  private _$build(): void {
+    if (this._$fields) {
+      for (let field in this._$fields) {
+        if (this._$fields.hasOwnProperty(field)) {
+          this._$createProps(field);
+        }
+      }
+    }
+    this._$adapterModelDefinition = this._$adapter.buildModelDef(this._$fields);
+  }
+
+  private _$createProps(key: string): void {
+    Object.defineProperty(this, key, {
+      get: () => {
+        return this._$data[key];
+      },
+      set: (value: any) => {
+        if (this._$data[key] !== value) {
+          try {
+            this._$validate(key, value);
+            this._$data[key] = value;
+          } catch (e) {
+            throw new InvalidModelDataException(key, e.message);
+          }
+        }
+      }
+    });
+  }
+
+  private _$validate(field: string, value: any): boolean {
+    return true;
   }
 }
 

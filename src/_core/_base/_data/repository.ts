@@ -1,6 +1,6 @@
-import { Model } from "./model";
-import { Adapter } from "../../_db/adapter";
-import { IModelBuilder, IRepositoryFilter } from "./_interfaces/modelBuilder";
+import { Model } from './model';
+import { Adapter } from '../../_db/adapter';
+import { IModelBuilder, IRepositoryFilter } from './_interfaces/modelBuilder';
 
 export abstract class Repository<T extends Model> {
   protected adapter: Adapter;
@@ -13,7 +13,7 @@ export abstract class Repository<T extends Model> {
   public async findById(id: any): Promise<T> {
     try {
       const model = this.modelBuilder.create();
-      const result: T = await (<Promise<T>>model.find(id));
+      const result: T = await (model.find(id) as Promise<T>);
       return result;
     } catch (e) {}
   }
@@ -32,21 +32,21 @@ export abstract class Repository<T extends Model> {
 
   public async save(model: T): Promise<T> {
     try {
-      const result: T = await (<Promise<T>>model.save());
+      const result: T = await (model.save() as Promise<T>);
       return result;
     } catch (e) {}
   }
 
   public async update(model: T): Promise<T> {
     try {
-      const result: T = await (<Promise<T>>model.update());
+      const result: T = await (model.update() as Promise<T>);
       return result;
     } catch (e) {}
   }
 
   public async remove(model: T): Promise<T> {
     try {
-      const result: T = await (<Promise<T>>model.remove());
+      const result: T = await (model.remove() as Promise<T>);
       return result;
     } catch (e) {}
   }

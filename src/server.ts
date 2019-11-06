@@ -1,6 +1,6 @@
 import "dotenv/config";
 import App from "./app";
-import configEnv from "config";
+import configEnv from "config/config";
 
 configEnv();
 

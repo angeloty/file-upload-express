@@ -3,7 +3,7 @@ export class InvalidModelDataException extends Error {
   constructor(field: string, message?: string) {
     super(message);
     this.field = field;
-    this.name = "model-invalid-data";
+    this.name = 'model-invalid-data';
   }
 }
 
