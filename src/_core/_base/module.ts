@@ -4,7 +4,9 @@ export class Module {
   protected app: express.Application;
   protected path: string;
   protected controllers: Controller[];
-  constructor() {}
+  constructor(controllers: Controller[]) {
+    this.controllers = controllers;
+  }
 
   public init(app: express.Application) {
     this.app = app;

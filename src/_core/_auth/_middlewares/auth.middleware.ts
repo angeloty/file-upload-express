@@ -4,7 +4,7 @@ import AuthenticationTokenMissingException from "../_exceptions/AuthenticationTo
 import WrongAuthenticationTokenException from "../_exceptions/WrongAuthenticationTokenException";
 import DataStoredInToken from "../_interfaces/dataStoredInToken";
 import RequestWithUser from "../_interfaces/requestWithUser.interface";
-import userModel from "../../../user/user.model";
+import userModel from "../../../modules/user/user.model";
 
 export async function authMiddleware(
   request: RequestWithUser,

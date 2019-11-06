@@ -8,13 +8,13 @@ import {
   IModelError
 } from './_interfaces/descriptors';
 
+// tslint:disable:variable-name
+// tslint:disable:function-name
 export abstract class Model implements IModelData {
   public static create<T>(this: new (d: IModelData) => T, data: IModelData): T {
     const object = Object.assign(new this(data), {});
     return object;
   }
-  // tslint:disable:variable-name
-  // tslint:disable:function-name
   protected _$adapter: Adapter = appContent.db.adapter;
   protected _$data: IModelData = {};
   protected _$fields: IModelFields = {};
@@ -38,12 +38,12 @@ export abstract class Model implements IModelData {
     'remove'
   ];
 
-  constructor(values?: IModelData) {
+  constructor(fields: IModelFields, values?: IModelData) {
     this._$build();
     this.set(values);
   }
 
-  public toObject() {
+  public toObject(): { [key: string]: any } {
     const object: { [key: string]: any } = {};
     const keys = Object.keys(this._$fields);
     for (let key of keys) {
@@ -55,9 +55,10 @@ export abstract class Model implements IModelData {
         }
       }
     }
+    return object;
   }
 
-  public toJSON() {
+  public toJSON(): { [key: string]: any } {
     const object = this.toObject();
     return object;
   }
@@ -105,7 +106,7 @@ export abstract class Model implements IModelData {
   protected set(values: IModelData): Model {
     const keys: string[] = Object.keys(values);
     for (let key of keys) {
-      if (!this._$$props.some((k: string) => k == key)) {
+      if (!this._$$props.some((k: string) => k === key)) {
         if (this._$fields[key]) {
           Object.assign(this, { [key]: values[key] });
         }
