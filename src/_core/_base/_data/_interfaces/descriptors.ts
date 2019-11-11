@@ -5,19 +5,19 @@ export interface IModelData {
 }
 
 export type DataType =
-  | String
-  | Boolean
-  | Number
+  | StringConstructor
+  | BooleanConstructor
+  | NumberConstructor
   | any[]
   | Model
   | Model[]
-  | Array<any>
+  | ArrayConstructor
+  | ObjectConstructor
   | File;
 
 export interface IModelFieldDescriptor {
   type: DataType;
-  validator?: Function;
-  regex?: RegExp;
+  validator?: IValidator;
   default?: any;
   required?: boolean;
   minLength?: number;
@@ -31,4 +31,9 @@ export interface IModelFields {
 export interface IModelError {
   type: string;
   message: string;
+}
+
+export interface IValidator {
+  regexp?: RegExp;
+  validationFn?: Function;
 }

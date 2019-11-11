@@ -1,14 +1,25 @@
-import { cleanEnv, port, str } from 'envalid';
+import { config as configDotenv } from 'dotenv';
+import { resolve } from 'path';
 
-function configEnv() {
-  cleanEnv(process.env, {
-    JWT_SECRET: str(),
-    DB_ADAPTER: str(),
-    DB_PASSWORD: str(),
-    DB_PATH: str(),
-    DB_USER: str(),
-    PORT: port()
-  });
+export function configEnv() {
+  switch (process.env.NODE_ENV) {
+    case 'development':
+      console.log("Environment is 'development'");
+      configDotenv({
+        path: resolve(__dirname, '../../.env.development')
+      });
+      break;
+    case 'test':
+      configDotenv({
+        path: resolve(__dirname, '../../.env.test')
+      });
+      break;
+    // Add 'staging' and 'production' cases here as well!
+    default:
+      configDotenv({
+        path: resolve(__dirname, '../../.env')
+      });
+  }
 }
 
 export default configEnv;

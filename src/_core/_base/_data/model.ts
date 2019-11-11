@@ -5,12 +5,32 @@ import { Adapter } from '../../_db/adapter';
 import {
   IModelFields,
   IModelData,
-  IModelError
+  IModelError,
+  IModelFieldDescriptor
 } from './_interfaces/descriptors';
+import 'reflect-metadata';
+import Registry from './registry';
 
 // tslint:disable:variable-name
 // tslint:disable:function-name
+const columnMetaKey = Symbol('Column');
+export type ModelConstructor = Model;
 export abstract class Model implements IModelData {
+  public static init<T extends Model>(
+    this: new (d: IModelData) => T,
+    data: IModelData
+  ): T {
+    const object = Object.assign(new this(data), {});
+    Registry.addModelDef(
+      this.constructor.name,
+      appContent.db.adapter.buildModelDef(
+        this.constructor.name,
+        object.getFields()
+      )
+    );
+    return object;
+  }
+
   public static create<T>(this: new (d: IModelData) => T, data: IModelData): T {
     const object = Object.assign(new this(data), {});
     return object;
@@ -20,8 +40,12 @@ export abstract class Model implements IModelData {
   protected _$fields: IModelFields = {};
   protected _$errors: IModelError[] = [];
   protected _$adapterModelDefinition: AdapterModelDefinition;
+  protected _$modelDefinition: any;
 
   private _$$props: string[] = [
+    '_$adapter',
+    '_$adapterModelDefinition',
+    '_$modelDefinition',
     '_$adapter',
     '_$data',
     '_$fields',
@@ -31,6 +55,11 @@ export abstract class Model implements IModelData {
     '_$createProps',
     '_$validate',
     'set',
+    'addField',
+    'getFields',
+    'setAdapterModelDefinition',
+    'toObject',
+    'toJSON',
     'find',
     'findBy',
     'save',
@@ -38,9 +67,29 @@ export abstract class Model implements IModelData {
     'remove'
   ];
 
-  constructor(fields: IModelFields, values?: IModelData) {
-    this._$build();
+  constructor(values?: IModelData) {
     this.set(values);
+    this._$adapterModelDefinition = this._$adapter.getModelDefinition(
+      this.constructor.name
+    );
+    this._$modelDefinition = this._$adapterModelDefinition.create();
+  }
+
+  public addField(name: string, definition: IModelFieldDescriptor) {
+    if (!this._$fields) {
+      this._$fields = {};
+    }
+    if (!this._$fields[name]) {
+      this._$fields[name] = definition;
+    }
+  }
+
+  public getFields(): IModelFields {
+    return this._$fields;
+  }
+
+  public setAdapterModelDefinition(modelDef: AdapterModelDefinition): void {
+    this._$adapterModelDefinition = modelDef;
   }
 
   public toObject(): { [key: string]: any } {
@@ -113,35 +162,6 @@ export abstract class Model implements IModelData {
       }
     }
     return this;
-  }
-
-  private _$build(): void {
-    if (this._$fields) {
-      for (let field in this._$fields) {
-        if (this._$fields.hasOwnProperty(field)) {
-          this._$createProps(field);
-        }
-      }
-    }
-    this._$adapterModelDefinition = this._$adapter.buildModelDef(this._$fields);
-  }
-
-  private _$createProps(key: string): void {
-    Object.defineProperty(this, key, {
-      get: () => {
-        return this._$data[key];
-      },
-      set: (value: any) => {
-        if (this._$data[key] !== value) {
-          try {
-            this._$validate(key, value);
-            this._$data[key] = value;
-          } catch (e) {
-            throw new InvalidModelDataException(key, e.message);
-          }
-        }
-      }
-    });
   }
 
   private _$validate(field: string, value: any): boolean {
