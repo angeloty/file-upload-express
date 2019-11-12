@@ -12,7 +12,7 @@ export interface IRouteConfig {
   path: string;
   method: HTTP_METHODS;
 }
-export function Route(
+export function route(
   config: IRouteConfig,
   ...middleware: express.RequestHandler[]
 ): (
@@ -42,4 +42,4 @@ export function Route(
   };
 }
 
-export default Route;
+export default route;

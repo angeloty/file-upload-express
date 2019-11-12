@@ -1,20 +1,20 @@
+import { Repository } from 'typeorm';
 import { TestModel } from './../models/test.model';
 import Controller from './../../../_core/_base/_controller/controller';
 import * as express from 'express';
-import Route, {
+import route, {
   HTTP_METHODS
 } from '../../../_core/_base/_controller/_decorators/route.decorator';
-import { ControllerDecorator } from '../../../_core/_base/_controller/_decorators/controller.decorator';
-import { getRepository } from 'typeorm';
+import { controller } from '../../../_core/_base/_controller/_decorators/controller.decorator';
 
-@ControllerDecorator('test')
+@controller('test')
 export class TestController extends Controller {
-  private repository: any;
+  private repository: Repository<TestModel>;
   constructor(connection: any) {
     super(connection);
   }
 
-  @Route({ path: 'test', method: HTTP_METHODS.GET })
+  @route({ path: 'test', method: HTTP_METHODS.GET })
   public async test(
     request: express.Request,
     response: express.Response,

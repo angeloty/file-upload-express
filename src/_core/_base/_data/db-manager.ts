@@ -1,5 +1,5 @@
 import { MongoConnectionOptions } from 'typeorm/driver/mongodb/MongoConnectionOptions';
-import { Connection, createConnection } from 'typeorm';
+import { Connection, createConnection, ConnectionOptions } from 'typeorm';
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 
 export class DBManager {
@@ -11,14 +11,23 @@ export class DBManager {
     }
   }
 
-  public static connect = async (models?: any): Promise<Connection> => {
+  public static connect = async (
+    models?: any,
+    options?: ConnectionOptions
+  ): Promise<Connection> => {
     try {
       switch (process.env.DB_ADAPTER) {
         case 'mysql':
         case 'mariadb':
-          return await DBManager.connectMySql(models);
+          return await DBManager.connectMySql(
+            models,
+            options as MysqlConnectionOptions
+          );
         case 'mongodb':
-          return await DBManager.connectMongoDB(models);
+          return await DBManager.connectMongoDB(
+            models,
+            options as MongoConnectionOptions
+          );
       }
     } catch (e) {
       throw e;
@@ -30,7 +39,7 @@ export class DBManager {
     options?: MysqlConnectionOptions
   ): Promise<Connection> => {
     try {
-      options = !options
+      const opt = !options
         ? {
           name: 'my-connection',
           type: process.env.DB_ADAPTER as 'mysql' | 'mariadb',
@@ -59,46 +68,51 @@ export class DBManager {
           }
         }
         : options;
-      console.log('Connection options', options);
-      return await createConnection(options);
+      console.log('Connection options', opt);
+      return await createConnection(opt);
     } catch (e) {
       console.log(e.message);
       throw e;
     }
   }
 
-  public static connectMongoDB = async (models?: any): Promise<Connection> => {
+  public static connectMongoDB = async (
+    models?: any,
+    options?: MongoConnectionOptions
+  ): Promise<Connection> => {
     try {
-      const options: MongoConnectionOptions = {
-        name: 'my-connection',
-        type: process.env.DB_ADAPTER as 'mongodb',
-        host: process.env.DB_HOST,
-        port: +process.env.DB_PORT,
-        username: process.env.DB_USER,
-        password: process.env.DB_PASS,
-        database: process.env.DB_NAME,
-        synchronize: true,
-        logging: false,
-        entities: models
-          ? models
-          : ['src/models/**/*.ts', 'src/modules/**/models/**/*.ts'],
-        migrations: [
-          'src/migration/**/*.ts',
-          'src/modules/**/migration/**/*.ts'
-        ],
-        subscribers: [
-          'src/subscriber/**/*.ts',
-          'src/modules/**/subscriber/**/*.ts'
-        ],
-        cli: {
-          entitiesDir: 'src/entity',
-          migrationsDir: 'src/migration',
-          subscribersDir: 'src/subscriber'
+      const opt: MongoConnectionOptions = !options
+        ? {
+          name: 'my-connection',
+          type: process.env.DB_ADAPTER as 'mongodb',
+          host: process.env.DB_HOST,
+          port: +process.env.DB_PORT,
+          username: process.env.DB_USER,
+          password: process.env.DB_PASS,
+          database: process.env.DB_NAME,
+          synchronize: true,
+          logging: false,
+          entities: models
+              ? models
+              : ['src/models/**/*.ts', 'src/modules/**/models/**/*.ts'],
+          migrations: [
+            'src/migration/**/*.ts',
+            'src/modules/**/migration/**/*.ts'
+          ],
+          subscribers: [
+            'src/subscriber/**/*.ts',
+            'src/modules/**/subscriber/**/*.ts'
+          ],
+          cli: {
+            entitiesDir: 'src/entity',
+            migrationsDir: 'src/migration',
+            subscribersDir: 'src/subscriber'
+          }
         }
-      };
-      console.log('Connection options', options);
+        : options;
+      console.log('Connection options', opt);
 
-      return await createConnection(options);
+      return await createConnection(opt);
     } catch (e) {
       console.log(e.message);
       throw e;
