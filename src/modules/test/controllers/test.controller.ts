@@ -15,14 +15,17 @@ export class TestController extends Controller {
   }
 
   @Route({ path: 'test', method: HTTP_METHODS.GET })
-  public test(
+  public async test(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) {
-    this.repository = getRepository(TestModel);
-    response
-      .json({})
-      .send(200);
+    console.log(this);
+    try {
+      this.repository = await this.getRepository<TestModel>(TestModel);
+      response.json({}).send(200);
+    } catch (e) {
+      response.json({ error: e.message }).send(500);
+    }
   }
 }

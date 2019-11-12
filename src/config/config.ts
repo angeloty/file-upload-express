@@ -1,7 +1,7 @@
 import { config as configDotenv } from 'dotenv';
 import { resolve } from 'path';
 
-export function configEnv() {
+export function configEnv(): void {
   switch (process.env.NODE_ENV) {
     case 'development':
       console.log("Environment is 'development'");

@@ -5,10 +5,11 @@ import { TestModule } from './modules/test/test.module';
 
 configEnv();
 
-const app: App = new App();
+let app: App = new App();
 try {
   app.initializeModules([new TestModule()]).then((application: App) => {
-    application.listen();
+    app = application;
+    app.listen();
   });
 } catch (error) {
   console.log(error);

@@ -10,7 +10,7 @@ export class Module {
     this.models = models;
   }
 
-  public init(path: string, app: express.Application): express.Application {
+  public init = (path: string, app: express.Application): express.Application => {
     this.app = app;
     this.path = path;
     this.app = this.initializeControllers(path);
@@ -18,7 +18,7 @@ export class Module {
     return this.app;
   }
 
-  public setConnection(app: express.Application, connection: any) {
+  public setConnection = (app: express.Application, connection: any) => {
     this.app = app;
     this.controllers.forEach((controller: Controller) => {
       controller.setConnection(connection);
@@ -30,7 +30,7 @@ export class Module {
     return this.models;
   }
 
-  private initializeControllers(path: string): express.Application {
+  private initializeControllers = (path: string): express.Application => {
     this.controllers.forEach((controller: Controller) => {
       this.app.use(path || '/', controller.getRouter());
       console.log(`Controller: ${controller.constructor.name} ......... Initialized`);
