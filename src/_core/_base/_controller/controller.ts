@@ -9,6 +9,7 @@ import {
   EntitySchema,
   Connection
 } from 'typeorm';
+import HttpException from '../../_exceptions/HttpException';
 
 export abstract class Controller {
   protected routes: Route[];
@@ -16,7 +17,7 @@ export abstract class Controller {
   protected path: string;
   protected connection: Connection;
   protected app: express.Application;
-  constructor(connection: Connection) {
+  constructor(connection?: Connection) {
     this.connection = connection;
     this.router = express.Router();
     this.loadRoutes();
@@ -64,6 +65,13 @@ export abstract class Controller {
     } catch (e) {
       throw e;
     }
+  }
+
+  protected handleError(e: Error, response: express.Response): express.Response {
+    if (e instanceof HttpException) {
+      return response.status(e.status).send(e.message);
+    }
+    return response.status(500).send(e.message);
   }
 
   private loadRoutes = () => {

@@ -1,15 +1,20 @@
+import { BaseUserService } from './../_services/user.service';
 import * as express from 'express';
 import route, { HTTP_METHODS } from '../../_base/_controller/_decorators/route.decorator';
-import { Repository, UpdateResult, DeleteResult } from 'typeorm';
+import { Repository, UpdateResult, DeleteResult, ObjectID } from 'typeorm';
 import { BaseUserModel } from '../_models/user.model';
 import Controller from '../../_base/_controller/controller';
 
-export class BaseUserController<T extends BaseUserModel> extends Controller {
+export class BaseUserController<T extends BaseUserModel, S extends BaseUserService<T>> extends Controller {
   protected repository: Repository<T>;
+  protected service: S;
   private modelClass: any;
-  constructor(connection: any, modelClass?: new () => T) {
+  private serviceClass: any;
+  constructor(connection: any, modelClass?: new () => T, serviceClass?: new () => S) {
     super(connection);
     this.modelClass = modelClass ? modelClass : BaseUserModel;
+    this.serviceClass = serviceClass ? serviceClass : BaseUserService;
+    this.service = new (this.serviceClass)(connection, this.modelClass) as S;
   }
 
   @route({ path: '', method: HTTP_METHODS.GET })
@@ -19,11 +24,10 @@ export class BaseUserController<T extends BaseUserModel> extends Controller {
     next: express.NextFunction
   ) {
     try {
-      this.repository = await this.getRepository<T>(this.modelClass);
-      const list: T[] = await this.repository.find();
+      const list: T[] = await this.service.getAll();
       return response.status(200).send(list);
     } catch (e) {
-      return response.status(500).send({ error: e.message });
+      return this.handleError(e, response);
     }
   }
 
@@ -34,14 +38,10 @@ export class BaseUserController<T extends BaseUserModel> extends Controller {
     next: express.NextFunction
   ) {
     try {
-      this.repository = await this.getRepository<T>(this.modelClass);
-      const element: T = await this.repository.findOne(request.params.id);
-      if (element) {
-        return response.status(200).send(element);
-      }
-      return response.status(404).send();
+      const element: T = await this.service.findById(request.params.id);
+      return response.status(200).send(element);
     } catch (e) {
-      return response.status(500).send({ error: e.message });
+      return this.handleError(e, response);
     }
   }
 
@@ -52,16 +52,38 @@ export class BaseUserController<T extends BaseUserModel> extends Controller {
     next: express.NextFunction
   ) {
     try {
-      this.repository = await this.getRepository<T>(this.modelClass);
-      const element = new this.modelClass();
-      element.username = request.body.username;
-      element.email = request.body.email;
-      element.password = request.body.password;
-      element.active = true;
-      const saved: T = await this.repository.save(element);
+      const saved: T = await this.service.register(request.body);
       return response.status(201).send(saved);
     } catch (e) {
-      return response.status(500).send({ error: e.message });
+      return this.handleError(e, response);
+    }
+  }
+
+  @route({ path: 'signup', method: HTTP_METHODS.POST })
+  public async register(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      const saved: T = await this.service.register(request.body);
+      return response.status(201).send(saved);
+    } catch (e) {
+      return this.handleError(e, response);
+    }
+  }
+
+  @route({ path: 'signin', method: HTTP_METHODS.POST })
+  public async login(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      const { user, token } = await this.service.login(request.body.username, request.body.password);
+      return response.status(201).send({ user, token });
+    } catch (e) {
+      return this.handleError(e, response);
     }
   }
 
@@ -72,21 +94,11 @@ export class BaseUserController<T extends BaseUserModel> extends Controller {
     next: express.NextFunction
   ) {
     try {
-      this.repository = await this.getRepository<T>(this.modelClass);
-      const element: any = await this.repository.findOne(request.params.id);
-      if (element) {
-        element.username = request.body.username;
-        element.email = request.body.email;
-        const updated: UpdateResult = await this.repository.update(element.id, element);
-        if (updated.affected) {
-          return response.status(200).send(element);
-        }
-
-      }
-      return response.status(404).send();
+      const element: any = await this.service.update(request.params.id, request.body);
+      return response.status(200).send(element);
 
     } catch (e) {
-      return response.status(500).send({ error: e.message });
+      return this.handleError(e, response);
     }
   }
 
@@ -97,18 +109,14 @@ export class BaseUserController<T extends BaseUserModel> extends Controller {
     next: express.NextFunction
   ) {
     try {
-      this.repository = await this.getRepository<T>(this.modelClass);
-      const element: T = await this.repository.findOne(request.params.id);
+      const element: boolean = await this.service.remove(request.params.id);
       if (element) {
-        const deleted: DeleteResult = await this.repository.delete(element.id);
-        if (deleted.affected) {
-          return response.status(204).send();
-        }
+        return response.status(204).send();
       }
       return response.status(404).send();
 
     } catch (e) {
-      return response.status(500).send({ error: e.message });
+      return this.handleError(e, response);
     }
   }
 }

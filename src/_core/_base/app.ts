@@ -27,7 +27,6 @@ class App {
         console.log(
           `Module: ${module.constructor.name} ......... Initializing`
         );
-        this.app = module.init('/', this.app);
         models = [...models, ...module.getModels()];
       });
       console.log(
@@ -38,7 +37,7 @@ class App {
         `DB Connection: ${process.env.DB_ADAPTER.toLocaleUpperCase()} ......... Connected`
       );
       modules.forEach((module: Module) => {
-        module.setConnection(this.app, this.connection);
+        this.app = module.init('/', this.app, this.connection);
       });
       return this;
     } catch (e) {
