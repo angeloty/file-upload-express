@@ -1,9 +1,8 @@
 import * as express from 'express';
-import { HTTP_METHODS } from '../../_base/_controller/_decorators/route.decorator';
+import route, { HTTP_METHODS } from '../../_base/_controller/_decorators/route.decorator';
 import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { BaseUserModel } from '../_models/user.model';
 import Controller from '../../_base/_controller/controller';
-import route from '../../_base/_controller/_decorators/route.decorator';
 
 export class BaseUserController<T extends BaseUserModel> extends Controller {
   protected repository: Repository<T>;
