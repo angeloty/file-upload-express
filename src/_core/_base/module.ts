@@ -35,7 +35,6 @@ export class Module {
     app: express.Application
   ): express.Application => {
     this.controllers.forEach((c: new (conn: Connection) => C) => {
-      console.log('cc:', c);
       c.prototype.connection = connection;
       const controller = new c(connection);
       console.log(`Controller: ${c.name} ......... Initialized`);
