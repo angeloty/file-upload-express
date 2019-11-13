@@ -1,5 +1,5 @@
-import { Model } from '_core/_base/_data/model';
-import { IModelData } from './descriptors';
+import { Model } from '../_decorators/node_modules/_core/_base/_data/model';
+import { IModelData } from './descriptors.interface';
 export interface IModelData {
   [key: string]: any;
 }

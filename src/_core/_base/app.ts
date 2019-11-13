@@ -1,10 +1,9 @@
 import { Module } from './module';
-import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 import 'reflect-metadata';
 import { Connection } from 'typeorm';
-import { DBManager } from './_data/db-manager';
+import { DBManager } from './_data/_providers/dbManager.provider';
 
 class App {
   public app: express.Application;
@@ -61,7 +60,7 @@ class App {
   }
 
   private initializeMiddleware = (): void => {
-    this.app.use(bodyParser.json());
+    this.app.use(express.json());
     this.app.use(cookieParser());
   }
 }

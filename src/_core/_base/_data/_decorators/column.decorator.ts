@@ -1,4 +1,4 @@
-import { Model } from './node_modules/_core/_base/_data/model';
+import { Model } from '_core/_base/_data/model';
 import {
   DataType,
   IValidator,

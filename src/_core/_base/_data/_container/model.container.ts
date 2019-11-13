@@ -1,15 +1,15 @@
 import { appContent } from './../../../config/constants';
 import { AdapterModelDefinition } from './../../_db/_adapters/adapterModelDef';
-import { InvalidModelDataException } from './../_exceptions/invalidDataException';
+import { InvalidModelDataException } from '../../_exceptions/invalidData.exception';
 import { Adapter } from '../../_db/adapter';
 import {
   IModelFields,
   IModelData,
   IModelError,
   IModelFieldDescriptor
-} from './_interfaces/descriptors';
+} from '../_interfaces/descriptors.interface';
 import 'reflect-metadata';
-import Registry from './registry';
+import Registry from '../_providers/registry.provider';
 
 // tslint:disable:variable-name
 // tslint:disable:function-name

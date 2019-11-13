@@ -1,3 +1,4 @@
+import { UserModule } from './modules/user/user.module';
 import 'reflect-metadata';
 import configEnv from './config/config';
 import App from './_core/_base/app';
@@ -7,10 +8,15 @@ configEnv();
 
 let app: App = new App();
 try {
-  app.initializeModules([new TestModule()]).then((application: App) => {
-    app = application;
-    app.listen();
-  });
+  app
+    .initializeModules([
+      new TestModule(),
+      new UserModule()
+    ])
+    .then((application: App) => {
+      app = application;
+      app.listen();
+    });
 } catch (error) {
   console.log(error);
 }

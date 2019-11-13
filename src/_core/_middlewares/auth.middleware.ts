@@ -1,10 +1,10 @@
-import { NextFunction, Response } from "express";
-import * as jwt from "jsonwebtoken";
-import AuthenticationTokenMissingException from "../_exceptions/AuthenticationTokenMissingException";
-import WrongAuthenticationTokenException from "../_exceptions/WrongAuthenticationTokenException";
-import DataStoredInToken from "../_interfaces/dataStoredInToken";
-import RequestWithUser from "../_interfaces/requestWithUser.interface";
-import userModel from "../../../modules/user/user.model";
+import { NextFunction, Response } from 'express';
+import * as jwt from 'jsonwebtoken';
+import AuthenticationTokenMissingException from '../_auth/_exceptions/authenticationTokenMissing.exception';
+import WrongAuthenticationTokenException from '../_auth/_exceptions/WrongAuthenticationToken.exception';
+import DataStoredInToken from '../_auth/_interfaces/dataStoredInToken.interface';
+import RequestWithUser from '../_auth/_interfaces/requestWithUser.interface';
+import userModel from '../../../modules/user/user.model';
 
 export async function authMiddleware(
   request: RequestWithUser,

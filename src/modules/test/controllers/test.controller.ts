@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { Repository, DeleteResult } from 'typeorm';
 import { TestModel } from './../models/test.model';
 import Controller from './../../../_core/_base/_controller/controller';
 import * as express from 'express';
@@ -15,17 +15,95 @@ export class TestController extends Controller {
   }
 
   @route({ path: 'test', method: HTTP_METHODS.GET })
+  public async all(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      this.repository = await this.getRepository<TestModel>(TestModel);
+      const list: TestModel[] = await this.repository.find();
+      return response.status(200).send(list);
+    } catch (e) {
+      return response.status(500).send({ error: e.message });
+    }
+  }
+
+  @route({ path: 'test/:id', method: HTTP_METHODS.GET })
+  public async some(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      this.repository = await this.getRepository<TestModel>(TestModel);
+      const element: TestModel = await this.repository.findOne(request.params.id);
+      if (element) {
+        return response.status(200).send(element);
+      }
+      return response.status(404).send();
+    } catch (e) {
+      return response.status(500).send({ error: e.message });
+    }
+  }
+
+  @route({ path: 'test', method: HTTP_METHODS.POST })
+  public async add(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      this.repository = await this.getRepository<TestModel>(TestModel);
+      const element = new TestModel();
+      element.name = request.body.name;
+      element.description = request.body.description;
+      const saved: TestModel = await this.repository.save(element);
+      return response.status(201).send(saved);
+    } catch (e) {
+      return response.status(500).send({ error: e.message });
+    }
+  }
+
+  @route({ path: 'test/:id', method: HTTP_METHODS.PUT })
   public async test(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) {
-    console.log(this);
     try {
       this.repository = await this.getRepository<TestModel>(TestModel);
-      response.json({}).send(200);
+      const element: TestModel = await this.repository.findOne(request.params.id);
+      if (element) {
+        element.name = request.body.name;
+        element.description = request.body.description;
+        const saved: TestModel = await this.repository.save(element);
+        return response.status(200).send(saved);
+      }
+      return response.status(404).send();
+
     } catch (e) {
-      response.json({ error: e.message }).send(500);
+      return response.status(500).send({ error: e.message });
+    }
+  }
+
+  @route({ path: 'test/:id', method: HTTP_METHODS.DELETE })
+  public async remove(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      this.repository = await this.getRepository<TestModel>(TestModel);
+      const element: TestModel = await this.repository.findOne(request.params.id);
+      if (element) {
+        const deleted: DeleteResult = await this.repository.delete(element);
+        return response.status(204).send();
+      }
+      return response.status(404).send();
+
+    } catch (e) {
+      return response.status(500).send({ error: e.message });
     }
   }
 }

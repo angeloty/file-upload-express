@@ -1,4 +1,4 @@
-import { DBManager } from './../_data/db-manager';
+import { DBManager } from '../_data/_providers/dbManager.provider';
 import { Route } from './_interfaces/route.interface';
 import * as express from 'express';
 import {

@@ -110,8 +110,6 @@ export class DBManager {
           }
         }
         : options;
-      console.log('Connection options', opt);
-
       return await createConnection(opt);
     } catch (e) {
       console.log(e.message);
