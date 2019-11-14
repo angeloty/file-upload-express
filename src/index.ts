@@ -9,7 +9,9 @@ import App from './_core/_base/app';
 import { TestModule } from './modules/test/test.module';
 
 configEnv();
-securityContext.setModelCls(UserModel as any);
+securityContext.set({
+  userModel: UserModel as any
+});
 let app: App = new App();
 try {
   app

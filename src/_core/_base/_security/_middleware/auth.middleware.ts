@@ -25,17 +25,15 @@ async function authMiddleware(
   } else if (request.cookies && request.cookies.Authorization) {
     token = request.cookies.Authorization;
   }
-  console.log(securityContext.modelCls);
   if (token) {
     try {
       const verificationResponse = jwt.verify(
         token,
         secret
       ) as DataStoredInToken;
-      console.log(verificationResponse);
       const id = verificationResponse._id;
       const connection = getConnection(process.env.DB_ADAPTER);
-      const user = await UserProvider.find(connection, securityContext.modelCls, id);
+      const user = await UserProvider.find(connection, securityContext.userModel, id);
       request.user = user;
       next();
     } catch (error) {
