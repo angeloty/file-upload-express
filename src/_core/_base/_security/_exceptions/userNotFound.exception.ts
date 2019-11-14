@@ -1,4 +1,4 @@
-import HttpException from '../../_exceptions/HttpException';
+import HttpException from '../../../_exceptions/HttpException';
 
 class UserNotFoundException extends HttpException {
   constructor() {

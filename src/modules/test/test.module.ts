@@ -3,6 +3,9 @@ import { TestController } from './controllers/test.controller';
 import { Module } from './../../_core/_base/module';
 export class TestModule extends Module {
   constructor(connection?: any) {
-    super([TestController], [TestModel]);
+    super({
+      controllers: [TestController],
+      models: [TestModel]
+    });
   }
 }

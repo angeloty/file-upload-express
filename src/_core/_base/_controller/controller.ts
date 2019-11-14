@@ -17,8 +17,9 @@ export abstract class Controller {
   protected path: string;
   protected connection: Connection;
   protected app: express.Application;
-  constructor(connection?: Connection) {
+  constructor(connection?: Connection, app?: express.Application) {
     this.connection = connection;
+    this.app = app;
     this.router = express.Router();
     this.loadRoutes();
   }

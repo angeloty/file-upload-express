@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from '_core/_middlewares/express';
+import { NextFunction, Request, Response } from 'express';
 import HttpException from '../_exceptions/HttpException';
 
 function errorMiddleware(error: HttpException, request: Request, response: Response, next: NextFunction) {

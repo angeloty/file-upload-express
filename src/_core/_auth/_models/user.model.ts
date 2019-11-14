@@ -1,6 +1,13 @@
-import { Column, ObjectIdColumn, ObjectID, BaseEntity, Index } from 'typeorm';
+import {
+  Column,
+  ObjectIdColumn,
+  ObjectID,
+  BaseEntity,
+  Index,
+} from 'typeorm';
+import { ROLE } from '../../_base/_security/_interfaces/roles.enum';
 
-export abstract class BaseUserModel extends BaseEntity {
+export class BaseUserModel extends BaseEntity {
   @ObjectIdColumn()
   public id: ObjectID;
 
@@ -17,4 +24,7 @@ export abstract class BaseUserModel extends BaseEntity {
 
   @Column()
   public active: boolean;
+
+  @Column()
+  public roles: ROLE[];
 }

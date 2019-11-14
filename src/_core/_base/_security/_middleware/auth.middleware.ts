@@ -1,13 +1,13 @@
+import { RequestWithUser } from './../_interfaces/requestWithUser.interface';
 import { NextFunction, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
-import AuthenticationTokenMissingException from '../_auth/_exceptions/authenticationTokenMissing.exception';
-import WrongAuthenticationTokenException from '../_auth/_exceptions/WrongAuthenticationToken.exception';
-import DataStoredInToken from '../_auth/_interfaces/dataStoredInToken.interface';
-import RequestWithUser from '../_auth/_interfaces/requestWithUser.interface';
-import userModel from '../../../modules/user/user.model';
-
-export async function authMiddleware(
-  request: RequestWithUser,
+import DataStoredInToken from '../_interfaces/dataStoredInToken.interface';
+import WrongAuthenticationTokenException from '../_exceptions/wrongAuthenticationToken.exception';
+import AuthenticationTokenMissingException from '../_exceptions/authenticationTokenMissing.exception';
+import { getRepository } from 'typeorm';
+import { BaseUserModel } from '../../../_auth/_models/user.model';
+async function authMiddleware<U extends BaseUserModel>(
+  request: RequestWithUser<U>,
   response: Response,
   next: NextFunction
 ) {
@@ -20,7 +20,8 @@ export async function authMiddleware(
         secret
       ) as DataStoredInToken;
       const id = verificationResponse._id;
-      const user = await userModel.findById(id);
+      const repository = getRepository<U>(BaseUserModel as unknown as (new () => U));
+      const user = await repository.findOne(id);
       if (user) {
         request.user = user;
         next();
@@ -34,3 +35,5 @@ export async function authMiddleware(
     next(new AuthenticationTokenMissingException());
   }
 }
+
+export default authMiddleware;

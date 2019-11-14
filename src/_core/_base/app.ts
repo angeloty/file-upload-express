@@ -1,17 +1,20 @@
 import { Module } from './module';
-import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 import 'reflect-metadata';
 import { Connection } from 'typeorm';
 import { DBManager } from './_data/_providers/dbManager.provider';
+import {
+  RequestHandlerParams,
+  ParamsDictionary
+} from 'express-serve-static-core';
 
 class App {
   public app: express.Application;
   public connection: Connection;
+  public moduleInstances: Module[] = [];
 
   constructor() {
     this.app = express();
-    this.initializeMiddleware();
   }
 
   public listen = (): void => {
@@ -20,14 +23,32 @@ class App {
     });
   }
 
-  public initializeModules = async (modules: Module[]): Promise<App> => {
+  public init = async <M extends Module>(config: {
+    modules: (new () => M)[];
+    middleware?: (() => RequestHandlerParams<ParamsDictionary>)[];
+  }): Promise<App> => {
+    this.initializeMiddleware(config.middleware);
+    return await this.initializeModules(config.modules);
+  }
+
+  public getServer = (): express.Application => {
+    return this.app;
+  }
+
+  private initializeModules = async <M extends Module>(
+    modules: (new () => M)[]
+  ): Promise<App> => {
     try {
       let models: any[] = [];
-      modules.forEach((module: Module) => {
+      modules.forEach((mClass: new () => M) => {
+        const module = new mClass();
+        this.moduleInstances = [...this.moduleInstances, module];
         console.log(
           `Module: ${module.constructor.name} ......... Initializing`
         );
-        models = [...models, ...module.getModels()];
+        if (module.getModels()) {
+          models = [...models, ...module.getModels()];
+        }
       });
       console.log(
         `DB Connection: ${process.env.DB_ADAPTER.toLocaleUpperCase()} ......... Connecting`
@@ -36,9 +57,9 @@ class App {
       console.log(
         `DB Connection: ${process.env.DB_ADAPTER.toLocaleUpperCase()} ......... Connected`
       );
-      modules.forEach((module: Module) => {
-        this.app = module.init('/', this.app, this.connection);
-      });
+      for (const module of this.moduleInstances) {
+        this.app = await module.init('/', this.app, this.connection);
+      }
       return this;
     } catch (e) {
       console.log(e.message);
@@ -46,11 +67,7 @@ class App {
     }
   }
 
-  public getServer = (): express.Application => {
-    return this.app;
-  }
-
-  public initializeDB = async (models?: any[]): Promise<Connection> => {
+  private initializeDB = async (models?: any[]): Promise<Connection> => {
     try {
       return await DBManager.initDB(models);
     } catch (e) {
@@ -58,9 +75,17 @@ class App {
     }
   }
 
-  private initializeMiddleware = (): void => {
-    this.app.use(express.json());
-    this.app.use(cookieParser());
+  private initializeMiddleware = (
+    middleware?: (() => RequestHandlerParams<ParamsDictionary>)[]
+  ): App => {
+    if (middleware) {
+      middleware.forEach(
+        (mid: () => RequestHandlerParams<ParamsDictionary>) => {
+          this.app.use(mid());
+        }
+      );
+    }
+    return this;
   }
 }
 

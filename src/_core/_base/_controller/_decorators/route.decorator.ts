@@ -8,9 +8,14 @@ export enum HTTP_METHODS {
 }
 import 'reflect-metadata';
 import Controller from '../controller';
+import roleMiddleware from '../../_security/_middleware/role.middleware';
+import authMiddleware from '../../_security/_middleware/auth.middleware';
+import { ROLE } from '../../_security/_interfaces/roles.enum';
 export interface IRouteConfig {
   path: string;
   method: HTTP_METHODS;
+  roles?: ROLE[];
+  secured?: boolean;
 }
 export function route(
   config: IRouteConfig,
@@ -25,6 +30,12 @@ export function route(
     propertyKey: string,
     descriptor: PropertyDescriptor
   ): void {
+    if (config.secured) {
+      middleware.push(authMiddleware);
+    }
+    if (config.roles && config.roles.length) {
+      middleware.push(roleMiddleware.bind(this, config.roles));
+    }
     if (middleware.length) {
       target.addRoute({
         middleware,
