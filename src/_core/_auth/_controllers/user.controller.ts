@@ -26,7 +26,7 @@ export class BaseUserController<
     this.service = new this.serviceClass(connection, this.modelClass) as S;
   }
 
-  @route({ path: '', method: HTTP_METHODS.GET })
+  @route<T>({ path: '', method: HTTP_METHODS.GET })
   public async all(
     request: express.Request,
     response: express.Response,
@@ -40,7 +40,7 @@ export class BaseUserController<
     }
   }
 
-  @route({ path: ':id', method: HTTP_METHODS.GET })
+  @route<T>({ path: ':id', method: HTTP_METHODS.GET, secured: true })
   public async some(
     request: express.Request,
     response: express.Response,
@@ -110,7 +110,7 @@ export class BaseUserController<
     return response.send(200);
   }
 
-  @route({ path: ':id', method: HTTP_METHODS.PUT })
+  @route<T>({ path: ':id', method: HTTP_METHODS.PUT, secured: true })
   public async update(
     request: express.Request,
     response: express.Response,
@@ -127,7 +127,7 @@ export class BaseUserController<
     }
   }
 
-  @route({ path: ':id', method: HTTP_METHODS.DELETE })
+  @route<T>({ path: ':id', method: HTTP_METHODS.DELETE, secured: true })
   public async remove(
     request: express.Request,
     response: express.Response,

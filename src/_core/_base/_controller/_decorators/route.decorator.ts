@@ -1,3 +1,5 @@
+import { securityContext } from './../../_security/security.context';
+import { BaseUserModel } from './../../../_auth/_models/user.model';
 import * as express from 'express';
 export enum HTTP_METHODS {
   GET = 'get',
@@ -30,11 +32,19 @@ export function route(
     propertyKey: string,
     descriptor: PropertyDescriptor
   ): void {
-    if (config.secured) {
-      middleware.push(authMiddleware);
+    const app = target.getApp();
+    if (config.secured || config.roles) {
+      middleware.push(
+        authMiddleware
+      );
     }
     if (config.roles && config.roles.length) {
-      middleware.push(roleMiddleware.bind(this, config.roles));
+      middleware.push(
+        roleMiddleware.bind(
+          {},
+          config.roles
+        )
+      );
     }
     if (middleware.length) {
       target.addRoute({

@@ -1,3 +1,5 @@
+import { UserModel } from './modules/user/models/user.model';
+import { securityContext } from './_core/_base/_security/security.context';
 import { UserModule } from './modules/user/user.module';
 import 'reflect-metadata';
 import * as express from 'express';
@@ -7,7 +9,7 @@ import App from './_core/_base/app';
 import { TestModule } from './modules/test/test.module';
 
 configEnv();
-
+securityContext.setModelCls(UserModel as any);
 let app: App = new App();
 try {
   app

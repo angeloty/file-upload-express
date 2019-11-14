@@ -11,6 +11,22 @@ import HttpException from '../../../_exceptions/HttpException';
 import { ROLE } from '../_interfaces/roles.enum';
 
 export class UserProvider {
+  public static async find<U extends BaseUserModel>(
+    connection: Connection,
+    modelClass: new () => U,
+    id: string
+  ): Promise<U> {
+    try {
+      const repository = connection.getRepository(modelClass);
+      const element: U = await repository.findOne(id);
+      if (element) {
+        return element;
+      }
+      throw new UserNotFoundException();
+    } catch (e) {
+      throw e;
+    }
+  }
   public static async create<U extends BaseUserModel>(
     connection: Connection,
     modelClass: new () => U,
@@ -37,7 +53,7 @@ export class UserProvider {
   ): Promise<U> {
     try {
       const repository = connection.getRepository(modelClass);
-      const element: U = await repository.findOne(id);
+      const element: U = await UserProvider.find<U>(connection, modelClass, id);
       if (element) {
         const user: U = repository.merge(element, data);
         const updated: UpdateResult = await repository.update(
@@ -45,7 +61,7 @@ export class UserProvider {
           user as any
         );
         if (updated.affected) {
-          return await repository.findOne(id);
+          return await UserProvider.find<U>(connection, modelClass, id);
         }
         throw new InvalidUserDataException();
       }
@@ -62,10 +78,7 @@ export class UserProvider {
   ) {
     try {
       const repository = connection.getRepository(modelClass);
-      const element = await repository.findOne(id);
-      if (!element) {
-        throw new UserNotFoundException();
-      }
+      const element = await UserProvider.find<U>(connection, modelClass, id);
       const deleted: DeleteResult = await repository.delete(element.id);
       if (deleted.affected) {
         return true;
@@ -80,23 +93,24 @@ export class UserProvider {
     connection: Connection,
     modelClass: new () => U,
     username: string,
-    pass: string
+    password: string
   ): Promise<{ user: U; token: string; cookie: string }> {
     try {
       const repository = connection.getRepository(modelClass);
-      const password = await bcrypt.hash(pass, 10);
       const result: U[] = await repository.find({
         where: {
-          username,
-          password
+          username
         }
       });
       if (result.length) {
         const user = result[0];
-        const jwToken = UserProvider.createToken<U>(user);
-        const token = jwToken.token;
-        const cookie = UserProvider.createCookie(jwToken);
-        return { user, token, cookie };
+        const passwordMatching = await bcrypt.compare(password, user.password);
+        if (passwordMatching) {
+          const jwToken = UserProvider.createToken<U>(user);
+          const token = jwToken.token;
+          const cookie = UserProvider.createCookie(jwToken);
+          return { user, token, cookie };
+        }
       }
       throw new WrongCredentialsException();
     } catch (e) {

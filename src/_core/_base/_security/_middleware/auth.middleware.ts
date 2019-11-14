@@ -1,35 +1,45 @@
+import { securityContext } from './../security.context';
+import { UserProvider } from './../_providers/user.provider';
 import { RequestWithUser } from './../_interfaces/requestWithUser.interface';
 import { NextFunction, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import DataStoredInToken from '../_interfaces/dataStoredInToken.interface';
 import WrongAuthenticationTokenException from '../_exceptions/wrongAuthenticationToken.exception';
 import AuthenticationTokenMissingException from '../_exceptions/authenticationTokenMissing.exception';
-import { getRepository } from 'typeorm';
+import { getConnection } from 'typeorm';
 import { BaseUserModel } from '../../../_auth/_models/user.model';
-async function authMiddleware<U extends BaseUserModel>(
-  request: RequestWithUser<U>,
+async function authMiddleware(
+  request: RequestWithUser<BaseUserModel>,
   response: Response,
   next: NextFunction
 ) {
-  const cookies = request.cookies;
-  if (cookies && cookies.Authorization) {
-    const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET;
+  let token = null;
+  if (
+    request.headers.authorization &&
+    request.headers.authorization.split(' ')[0] === 'Bearer'
+  ) {
+    token = request.headers.authorization.split(' ')[1];
+  } else if (request.query && request.query.token) {
+    token = request.query.token;
+  } else if (request.cookies && request.cookies.Authorization) {
+    token = request.cookies.Authorization;
+  }
+  console.log(securityContext.modelCls);
+  if (token) {
     try {
       const verificationResponse = jwt.verify(
-        cookies.Authorization,
+        token,
         secret
       ) as DataStoredInToken;
+      console.log(verificationResponse);
       const id = verificationResponse._id;
-      const repository = getRepository<U>(BaseUserModel as unknown as (new () => U));
-      const user = await repository.findOne(id);
-      if (user) {
-        request.user = user;
-        next();
-      } else {
-        next(new WrongAuthenticationTokenException());
-      }
+      const connection = getConnection(process.env.DB_ADAPTER);
+      const user = await UserProvider.find(connection, securityContext.modelCls, id);
+      request.user = user;
+      next();
     } catch (error) {
-      next(new WrongAuthenticationTokenException());
+      next(error);
     }
   } else {
     next(new AuthenticationTokenMissingException());

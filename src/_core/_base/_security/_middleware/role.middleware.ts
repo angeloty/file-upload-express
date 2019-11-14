@@ -18,15 +18,7 @@ async function roleMiddleware<U extends BaseUserModel>(
   if (cookies && cookies.Authorization) {
     const secret = process.env.JWT_SECRET;
     try {
-      const verificationResponse = jwt.verify(
-        cookies.Authorization,
-        secret
-      ) as DataStoredInToken;
-      const id = verificationResponse._id;
-      const repository = getRepository<U>(
-        (BaseUserModel as unknown) as new () => U
-      );
-      const user = await repository.findOne(id);
+      const user = request.user;
       if (user) {
         let forbidden = true;
         if (user.roles) {
@@ -38,7 +30,6 @@ async function roleMiddleware<U extends BaseUserModel>(
           }
         }
         if (!forbidden) {
-          request.user = user;
           next();
         } else {
           next(new ForbiddenException());

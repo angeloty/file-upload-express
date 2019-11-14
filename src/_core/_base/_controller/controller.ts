@@ -10,14 +10,15 @@ import {
   Connection
 } from 'typeorm';
 import HttpException from '../../_exceptions/HttpException';
+import App from '../app';
 
 export abstract class Controller {
   protected routes: Route[];
   protected router: express.Router;
   protected path: string;
   protected connection: Connection;
-  protected app: express.Application;
-  constructor(connection?: Connection, app?: express.Application) {
+  protected app: App;
+  constructor(connection?: Connection, app?: App) {
     this.connection = connection;
     this.app = app;
     this.router = express.Router();
@@ -53,6 +54,10 @@ export abstract class Controller {
 
   public setApp = (app: any) => {
     this.app = app;
+  }
+
+  public getApp() {
+    return this.app;
   }
 
   protected async getRepository<T extends ObjectLiteral>(

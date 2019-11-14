@@ -4,7 +4,7 @@ import Controller from './_controller/controller';
 import App from './app';
 import { MigrationProvider } from './_data/_providers/migration.provider';
 export class Module {
-  protected app: express.Application;
+  protected app: App;
   protected path: string;
   protected controllers: (new <C extends Controller>(conn: Connection) => C)[];
   protected migrations: (new <M extends MigrationProvider>(
@@ -24,7 +24,7 @@ export class Module {
 
   public init = async (
     path: string,
-    app: express.Application,
+    app: App,
     connection: Connection
   ): Promise<express.Application> => {
     this.app = app;
@@ -32,7 +32,7 @@ export class Module {
     this.app = this.initializeControllers(path, connection, app);
     this.app = await this.runMigrations(connection, app);
     console.log(`Module: ${this.constructor.name} ......... Initialized`);
-    return this.app;
+    return this.app.app;
   }
 
   public getModels() {
@@ -42,13 +42,13 @@ export class Module {
   private initializeControllers = <C extends Controller>(
     path: string,
     connection: Connection,
-    app: express.Application
-  ): express.Application => {
-    this.controllers.forEach((c: new (conn: Connection, app: express.Application) => C) => {
+    app: App
+  ): App => {
+    this.controllers.forEach((c: new (conn: Connection, app: App) => C) => {
       const controller = new c(connection, app);
       console.log(`Controller: ${c.name} ......... Initialized`);
       this.controllerInstances = [...this.controllerInstances, controller];
-      this.app.use(path || '/', controller.getRouter());
+      this.app.app.use(path || '/', controller.getRouter());
       console.log(`Routes for controller: ${c.name} ......... Loaded`);
       controller.setApp(app);
     });
@@ -57,8 +57,8 @@ export class Module {
 
   private async runMigrations<M extends MigrationProvider>(
     connection: Connection,
-    app: express.Application
-  ): Promise<express.Application> {
+    app: App
+  ): Promise<App> {
     if (this.migrations) {
       for (const m of this.migrations) {
         const migration = new m(connection);

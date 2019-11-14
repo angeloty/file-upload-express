@@ -41,7 +41,7 @@ export class DBManager {
     try {
       const opt = !options
         ? {
-          name: 'my-connection',
+          name: process.env.DB_ADAPTER,
           type: process.env.DB_ADAPTER as 'mysql' | 'mariadb',
           host: process.env.DB_HOST,
           port: +process.env.DB_PORT,
@@ -83,7 +83,7 @@ export class DBManager {
     try {
       const opt: MongoConnectionOptions = !options
         ? {
-          name: 'my-connection',
+          name: process.env.DB_ADAPTER,
           type: process.env.DB_ADAPTER as 'mongodb',
           host: process.env.DB_HOST,
           port: +process.env.DB_PORT,

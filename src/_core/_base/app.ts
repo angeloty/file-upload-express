@@ -1,3 +1,4 @@
+import { BaseUserModel } from './../_auth/_models/user.model';
 import { Module } from './module';
 import * as express from 'express';
 import 'reflect-metadata';
@@ -12,6 +13,7 @@ class App {
   public app: express.Application;
   public connection: Connection;
   public moduleInstances: Module[] = [];
+  public userModel: new <U extends BaseUserModel>() => U;
 
   constructor() {
     this.app = express();
@@ -23,7 +25,7 @@ class App {
     });
   }
 
-  public init = async <M extends Module>(config: {
+  public init = async <M extends Module, U extends BaseUserModel>(config: {
     modules: (new () => M)[];
     middleware?: (() => RequestHandlerParams<ParamsDictionary>)[];
   }): Promise<App> => {
@@ -58,7 +60,7 @@ class App {
         `DB Connection: ${process.env.DB_ADAPTER.toLocaleUpperCase()} ......... Connected`
       );
       for (const module of this.moduleInstances) {
-        this.app = await module.init('/', this.app, this.connection);
+        this.app = await module.init('/', this, this.connection);
       }
       return this;
     } catch (e) {
