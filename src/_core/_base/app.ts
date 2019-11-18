@@ -8,6 +8,7 @@ import {
   RequestHandlerParams,
   ParamsDictionary
 } from 'express-serve-static-core';
+import fileUpload = require('express-fileupload');
 
 class App {
   public app: express.Application;
@@ -30,11 +31,25 @@ class App {
     middleware?: (() => RequestHandlerParams<ParamsDictionary>)[];
   }): Promise<App> => {
     this.initializeMiddleware(config.middleware);
+    this.initializeUploader();
     return await this.initializeModules(config.modules);
   }
 
   public getServer = (): express.Application => {
     return this.app;
+  }
+
+  private initializeUploader = () => {
+    const config: { [key: string]: any } = {
+      safeFileNames: true,
+      preserveExtension: true,
+      parseNested: true
+    };
+    if (process.env.USE_TMP_FILES) {
+      config.useTempFiles = true;
+      config.tempFileDir = process.env.TMP_DIR;
+    }
+    this.app.use(fileUpload(config));
   }
 
   private initializeModules = async <M extends Module>(

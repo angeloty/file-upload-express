@@ -25,7 +25,7 @@ export class TestController extends Controller {
       const list: TestModel[] = await this.repository.find();
       return response.status(200).send(list);
     } catch (e) {
-      return response.status(500).send({ error: e.message });
+      return this.handleError(e, response);
     }
   }
 
@@ -43,7 +43,7 @@ export class TestController extends Controller {
       }
       return response.status(404).send();
     } catch (e) {
-      return response.status(500).send({ error: e.message });
+      return this.handleError(e, response);
     }
   }
 
@@ -61,7 +61,7 @@ export class TestController extends Controller {
       const saved: TestModel = await this.repository.save(element);
       return response.status(201).send(saved);
     } catch (e) {
-      return response.status(500).send({ error: e.message });
+      return this.handleError(e, response);
     }
   }
 
@@ -83,7 +83,7 @@ export class TestController extends Controller {
       return response.status(404).send();
 
     } catch (e) {
-      return response.status(500).send({ error: e.message });
+      return this.handleError(e, response);
     }
   }
 
@@ -103,7 +103,9 @@ export class TestController extends Controller {
       return response.status(404).send();
 
     } catch (e) {
-      return response.status(500).send({ error: e.message });
+      return this.handleError(e, response);
     }
   }
 }
+
+export default TestController;

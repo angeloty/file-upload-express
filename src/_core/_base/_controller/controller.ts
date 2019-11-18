@@ -1,16 +1,14 @@
-import { DBManager } from '../_data/_providers/dbManager.provider';
 import { Route } from './_interfaces/route.interface';
 import * as express from 'express';
 import {
   Repository,
-  Entity,
   ObjectLiteral,
-  getRepository,
   EntitySchema,
   Connection
 } from 'typeorm';
 import HttpException from '../../_exceptions/HttpException';
 import App from '../app';
+import Busboy = require('busboy');
 
 export abstract class Controller {
   protected routes: Route[];
@@ -73,11 +71,36 @@ export abstract class Controller {
     }
   }
 
-  protected handleError(e: Error, response: express.Response): express.Response {
+  protected handleError(
+    e: Error,
+    response: express.Response
+  ): express.Response {
     if (e instanceof HttpException) {
       return response.status(e.status).send(e.message);
     }
     return response.status(500).send(e.message);
+  }
+
+  protected async uploadFile(
+    req: express.Request,
+  ): Promise<File> {
+    return new Promise((resolve, reject) => {
+      if (req.method === 'POST') {
+        const busboy = new Busboy({ headers: req.headers });
+        busboy.on('file', (fIndex, file, filename, encoding, mimetype) => {
+          file.on('data', (data) => {
+            console.log('File [' + fIndex + '] got ' + data.length + ' bytes');
+          });
+          file.on('end', () => {
+            console.log('File [' + fIndex + '] Finished');
+            resolve(file);
+          });
+        });
+        req.pipe(busboy);
+      } else {
+        throw new HttpException(405, 'Invalid request format');
+      }
+    });
   }
 
   private loadRoutes = () => {
