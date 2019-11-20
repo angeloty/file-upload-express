@@ -2,7 +2,7 @@ import HttpException from '../../../_exceptions/HttpException';
 
 class InvalidUserDataException extends HttpException {
   constructor() {
-    super(405, 'Invalid User data provided');
+    super(400, 'Invalid User data provided');
   }
 }
 

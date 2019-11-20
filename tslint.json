@@ -10,12 +10,14 @@
     "interface-name": false,
     "import-name": false,
     "no-console": false,
+    "function-name": false,
     "object-literal-sort-keys": false,
     "ordered-imports": false,
     "trailing-comma": false,
     "ban-types": false,
     "array-type": false,
-    "prefer-array-literal": false
+    "prefer-array-literal": false,
+    "variable-name": false
   },
   "rulesDirectory": []
 }

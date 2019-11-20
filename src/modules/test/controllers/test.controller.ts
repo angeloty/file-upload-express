@@ -1,43 +1,45 @@
-import { Repository, DeleteResult } from 'typeorm';
 import { TestModel } from './../models/test.model';
-import Controller from './../../../_core/_base/_controller/controller';
+import BaseController from './../../../_core/_base/_controller/controller';
 import * as express from 'express';
-import route, {
-  HTTP_METHODS
+import {
+  Get,
+  Post,
+  Put,
+  Delete
 } from '../../../_core/_base/_controller/_decorators/route.decorator';
-import { controller } from '../../../_core/_base/_controller/_decorators/controller.decorator';
+import { Controller } from '../../../_core/_base/_controller/_decorators/controller.decorator';
+import { TestService } from '../services/test.service';
 
-@controller('test')
-export class TestController extends Controller {
-  private repository: Repository<TestModel>;
-  constructor(connection: any) {
-    super(connection);
+@Controller({ path: 'test' })
+export class TestController extends BaseController {
+  private service: TestService;
+  constructor() {
+    super();
+    this.service = new TestService();
   }
 
-  @route({ path: 'test', method: HTTP_METHODS.GET })
+  @Get({ path: 'test' })
   public async all(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) {
     try {
-      this.repository = await this.getRepository<TestModel>(TestModel);
-      const list: TestModel[] = await this.repository.find();
+      const list: TestModel[] = await this.service.findAll();
       return response.status(200).send(list);
     } catch (e) {
       return this.handleError(e, response);
     }
   }
 
-  @route({ path: 'test/:id', method: HTTP_METHODS.GET })
+  @Get({ path: 'test/:id' })
   public async some(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) {
     try {
-      this.repository = await this.getRepository<TestModel>(TestModel);
-      const element: TestModel = await this.repository.findOne(request.params.id);
+      const element: TestModel = await this.service.find(request.params.id);
       if (element) {
         return response.status(200).send(element);
       }
@@ -47,61 +49,49 @@ export class TestController extends Controller {
     }
   }
 
-  @route({ path: 'test', method: HTTP_METHODS.POST })
+  @Post({ path: 'test' })
   public async add(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) {
     try {
-      this.repository = await this.getRepository<TestModel>(TestModel);
-      const element = new TestModel();
-      element.name = request.body.name;
-      element.description = request.body.description;
-      const saved: TestModel = await this.repository.save(element);
+      const saved: TestModel = await this.service.create(request.body);
       return response.status(201).send(saved);
     } catch (e) {
       return this.handleError(e, response);
     }
   }
 
-  @route({ path: 'test/:id', method: HTTP_METHODS.PUT })
+  @Put({ path: 'test/:id' })
   public async test(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) {
     try {
-      this.repository = await this.getRepository<TestModel>(TestModel);
-      const element: TestModel = await this.repository.findOne(request.params.id);
-      if (element) {
-        element.name = request.body.name;
-        element.description = request.body.description;
-        const saved: TestModel = await this.repository.save(element);
-        return response.status(200).send(saved);
-      }
-      return response.status(404).send();
-
+      const saved: TestModel = await this.service.update(
+        request.params.id,
+        request.body
+      );
+      return response.status(200).send(saved);
     } catch (e) {
       return this.handleError(e, response);
     }
   }
 
-  @route({ path: 'test/:id', method: HTTP_METHODS.DELETE })
+  @Delete({ path: 'test/:id' })
   public async remove(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) {
     try {
-      this.repository = await this.getRepository<TestModel>(TestModel);
-      const element: TestModel = await this.repository.findOne(request.params.id);
-      if (element) {
-        const deleted: DeleteResult = await this.repository.delete(element);
+      const deleted: boolean = await this.service.remove(request.params.id);
+      if (deleted) {
         return response.status(204).send();
       }
       return response.status(404).send();
-
     } catch (e) {
       return this.handleError(e, response);
     }

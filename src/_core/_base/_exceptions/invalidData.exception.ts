@@ -1,9 +1,10 @@
-export class InvalidModelDataException extends Error {
+import HttpException from '../../_exceptions/HttpException';
+
+export class InvalidModelDataException extends HttpException {
   protected field: string;
-  constructor(field: string, message?: string) {
-    super(message);
+  constructor(field: string) {
+    super(400, `Invalid model data at field: ${field}`);
     this.field = field;
-    this.name = 'model-invalid-data';
   }
 }
 

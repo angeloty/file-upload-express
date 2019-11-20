@@ -6,7 +6,7 @@ import { MigrationProvider } from './_data/_providers/migration.provider';
 export class Module {
   protected app: App;
   protected path: string;
-  protected controllers: (new <C extends Controller>(conn: Connection) => C)[];
+  protected controllers: (new <C extends Controller>() => C)[];
   protected migrations: (new <M extends MigrationProvider>(
     conn: Connection
   ) => M)[];
@@ -44,8 +44,8 @@ export class Module {
     connection: Connection,
     app: App
   ): App => {
-    this.controllers.forEach((c: new (conn: Connection, app: App) => C) => {
-      const controller = new c(connection, app);
+    this.controllers.forEach((c: new () => C) => {
+      const controller = new c();
       console.log(`Controller: ${c.name} ......... Initialized`);
       this.controllerInstances = [...this.controllerInstances, controller];
       this.app.app.use(path || '/', controller.getRouter());

@@ -1,3 +1,5 @@
+import * as multer from 'multer';
+import * as Loki from 'lokijs';
 import { BaseUserModel } from './_auth/_models/user.model';
 import { Module } from './_base/module';
 import { securityContext } from './_base/_security/security.context';
@@ -7,34 +9,57 @@ import {
   ParamsDictionary
 } from 'express-serve-static-core';
 import configEnv from '../config/config';
+import { Connection } from 'typeorm';
 
-export const ApplicationContext = {
+export interface IApplicationContext {
+  app: App;
+  connection: Connection;
+  security: {};
+  uploader: any;
+  fileDB: any;
+  init: Function;
+  run: Function;
+}
+
+export const applicationContext: IApplicationContext = {
   app: null,
+  connection: null,
   security: securityContext,
-  init: <M extends Module, U extends BaseUserModel>(config: {
+  uploader: null,
+  fileDB: null,
+  init: async <M extends Module>(config: {
     modules: (new () => M)[];
     middleware?: (() => RequestHandlerParams<ParamsDictionary>)[];
     security?: { userModel: any };
-  }) => {
+    environment?: string;
+  }): Promise<App> => {
+    if (!config.environment) {
+      config.environment = 'development';
+    }
+    process.env.NODE_ENV = config.environment;
     configEnv();
-    this.app = new App();
+    const DB_NAME = 'db.json';
+    const UPLOAD_PATH = process.env.UPLOAD_DIR || 'uploads/';
+    applicationContext.uploader = multer({ dest: `${UPLOAD_PATH}` }); // multer configuration
+    applicationContext.fileDB = new Loki(`${UPLOAD_PATH}/${DB_NAME}`, {
+      persistenceMethod: 'fs'
+    });
     if (config.security) {
       securityContext.set(config.security);
     }
     try {
-      this.app
-        .init({
-          modules: config.modules,
-          middleware: config.middleware
-        })
-        .then((application: App) => {
-          this.app = application;
-          this.app.listen();
-        });
+      const app = new App();
+      return await app.init({
+        modules: config.modules,
+        middleware: config.middleware
+      });
     } catch (error) {
       console.log(error);
     }
+  },
+  run(app: App) {
+    return app.listen();
   }
 };
 
-export default ApplicationContext;
+export default applicationContext;

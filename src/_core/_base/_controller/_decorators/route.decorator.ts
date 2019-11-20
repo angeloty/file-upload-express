@@ -8,18 +8,32 @@ export enum HTTP_METHODS {
   PATCH = 'patch',
   DELETE = 'delete'
 }
+export enum CONTENT_TYPE {
+  JSON = 'application/json',
+  FILE = 'multipart/form-data',
+  PLAIN_TEXT = 'text/plain',
+  HTML = 'text/html',
+}
 import 'reflect-metadata';
 import Controller from '../controller';
 import roleMiddleware from '../../_security/_middleware/role.middleware';
 import authMiddleware from '../../_security/_middleware/auth.middleware';
 import { ROLE } from '../../_security/_interfaces/roles.enum';
-export interface IRouteConfig {
+
+export interface IBaseRouteConfig {
   path: string;
-  method: HTTP_METHODS;
+  method?: HTTP_METHODS;
   roles?: ROLE[];
+  file?: {
+    path: string,
+    multiple: boolean
+  };
   secured?: boolean;
 }
-export function route(
+export interface IRouteConfig extends IBaseRouteConfig {
+  method: HTTP_METHODS;
+}
+export function Route(
   config: IRouteConfig,
   ...middleware: express.RequestHandler[]
 ): (
@@ -51,16 +65,78 @@ export function route(
         middleware,
         path: config.path,
         method: config.method,
+        file: config.file,
         handler: descriptor.value
       });
     } else {
       target.addRoute({
         path: config.path,
         method: config.method,
+        file: config.file,
         handler: descriptor.value
       });
     }
   };
 }
 
-export default route;
+export function Get(
+  config: IBaseRouteConfig,
+  ...middleware: express.RequestHandler[]
+): (
+  target: Controller,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+) => void {
+  config.method = HTTP_METHODS.GET;
+  return Route(config as IRouteConfig, ...middleware);
+}
+
+export function Post(
+  config: IBaseRouteConfig,
+  ...middleware: express.RequestHandler[]
+): (
+  target: Controller,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+) => void {
+  config.method = HTTP_METHODS.POST;
+  return Route(config as IRouteConfig, ...middleware);
+}
+
+export function Patch(
+  config: IBaseRouteConfig,
+  ...middleware: express.RequestHandler[]
+): (
+  target: Controller,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+) => void {
+  config.method = HTTP_METHODS.PATCH;
+  return Route(config as IRouteConfig, ...middleware);
+}
+
+export function Put(
+  config: IBaseRouteConfig,
+  ...middleware: express.RequestHandler[]
+): (
+  target: Controller,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+) => void {
+  config.method = HTTP_METHODS.PUT;
+  return Route(config as IRouteConfig, ...middleware);
+}
+
+export function Delete(
+  config: IBaseRouteConfig,
+  ...middleware: express.RequestHandler[]
+): (
+  target: Controller,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+) => void {
+  config.method = HTTP_METHODS.DELETE;
+  return Route(config as IRouteConfig, ...middleware);
+}
+
+export default Route;

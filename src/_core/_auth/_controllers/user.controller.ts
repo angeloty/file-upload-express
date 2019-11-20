@@ -1,32 +1,34 @@
 import { BaseUserService } from './../_services/user.service';
 import * as express from 'express';
-import route, {
-  HTTP_METHODS
+import {
+  Get,
+  Post,
+  Put,
+  Delete
 } from '../../_base/_controller/_decorators/route.decorator';
 import { Repository, BaseEntity } from 'typeorm';
 import { BaseUserModel } from '../_models/user.model';
-import Controller from '../../_base/_controller/controller';
+import BaseController from '../../_base/_controller/controller';
 
 export class BaseUserController<
   T extends BaseUserModel,
   S extends BaseUserService<T>
-> extends Controller {
+> extends BaseController {
   protected repository: Repository<T>;
   protected service: S;
   private modelClass: any;
   private serviceClass: any;
   constructor(
-    connection: any,
     modelClass?: new () => T,
     serviceClass?: new () => S
   ) {
-    super(connection);
+    super();
     this.modelClass = modelClass ? modelClass : BaseUserModel;
     this.serviceClass = serviceClass ? serviceClass : BaseUserService;
-    this.service = new this.serviceClass(connection, this.modelClass) as S;
+    this.service = new this.serviceClass(this.modelClass) as S;
   }
 
-  @route<T>({ path: '', method: HTTP_METHODS.GET })
+  @Get({ path: '' })
   public async all(
     request: express.Request,
     response: express.Response,
@@ -40,7 +42,7 @@ export class BaseUserController<
     }
   }
 
-  @route<T>({ path: ':id', method: HTTP_METHODS.GET, secured: true })
+  @Get({ path: ':id', secured: true })
   public async some(
     request: express.Request,
     response: express.Response,
@@ -54,14 +56,13 @@ export class BaseUserController<
     }
   }
 
-  @route({ path: '', method: HTTP_METHODS.POST })
+  @Post({ path: '' })
   public async add(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ): Promise<express.Response> {
     try {
-      console.log(request.body);
       const saved: T = await this.service.register(request.body);
       return response.status(201).send(saved);
     } catch (e) {
@@ -69,7 +70,7 @@ export class BaseUserController<
     }
   }
 
-  @route({ path: 'signup', method: HTTP_METHODS.POST })
+  @Post({ path: 'signup' })
   public async register(
     request: express.Request,
     response: express.Response,
@@ -83,7 +84,7 @@ export class BaseUserController<
     }
   }
 
-  @route({ path: 'signin', method: HTTP_METHODS.POST })
+  @Post({ path: 'signin' })
   public async login(
     request: express.Request,
     response: express.Response,
@@ -95,13 +96,13 @@ export class BaseUserController<
         request.body.password
       );
       response.setHeader('Set-Cookie', [cookie]);
-      return response.status(201).send({ user, token });
+      return response.status(200).send({ user, token });
     } catch (e) {
       return this.handleError(e, response);
     }
   }
 
-  @route({ path: 'signout', method: HTTP_METHODS.POST })
+  @Post({ path: 'signout' })
   public logout(
     request: express.Request,
     response: express.Response
@@ -110,7 +111,7 @@ export class BaseUserController<
     return response.send(200);
   }
 
-  @route<T>({ path: ':id', method: HTTP_METHODS.PUT, secured: true })
+  @Put({ path: ':id', secured: true })
   public async update(
     request: express.Request,
     response: express.Response,
@@ -127,7 +128,7 @@ export class BaseUserController<
     }
   }
 
-  @route<T>({ path: ':id', method: HTTP_METHODS.DELETE, secured: true })
+  @Delete({ path: ':id', secured: true })
   public async remove(
     request: express.Request,
     response: express.Response,

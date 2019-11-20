@@ -1,3 +1,4 @@
+import { applicationContext, IApplicationContext } from './../application.context';
 import { BaseUserModel } from './../_auth/_models/user.model';
 import { Module } from './module';
 import * as express from 'express';
@@ -8,16 +9,18 @@ import {
   RequestHandlerParams,
   ParamsDictionary
 } from 'express-serve-static-core';
-import fileUpload = require('express-fileupload');
 
 class App {
   public app: express.Application;
   public connection: Connection;
   public moduleInstances: Module[] = [];
   public userModel: new <U extends BaseUserModel>() => U;
+  public context: IApplicationContext;
 
   constructor() {
     this.app = express();
+    this.context = applicationContext;
+    this.context.app = this;
   }
 
   public listen = (): void => {
@@ -31,25 +34,11 @@ class App {
     middleware?: (() => RequestHandlerParams<ParamsDictionary>)[];
   }): Promise<App> => {
     this.initializeMiddleware(config.middleware);
-    this.initializeUploader();
     return await this.initializeModules(config.modules);
   }
 
   public getServer = (): express.Application => {
     return this.app;
-  }
-
-  private initializeUploader = () => {
-    const config: { [key: string]: any } = {
-      safeFileNames: true,
-      preserveExtension: true,
-      parseNested: true
-    };
-    if (process.env.USE_TMP_FILES) {
-      config.useTempFiles = true;
-      config.tempFileDir = process.env.TMP_DIR;
-    }
-    this.app.use(fileUpload(config));
   }
 
   private initializeModules = async <M extends Module>(
@@ -71,6 +60,7 @@ class App {
         `DB Connection: ${process.env.DB_ADAPTER.toLocaleUpperCase()} ......... Connecting`
       );
       this.connection = await this.initializeDB(models);
+      this.context.connection = this.connection;
       console.log(
         `DB Connection: ${process.env.DB_ADAPTER.toLocaleUpperCase()} ......... Connected`
       );

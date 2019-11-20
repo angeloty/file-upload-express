@@ -4,12 +4,13 @@ import { Service } from './../../_base/_service/service';
 import { BaseUserModel } from '../_models/user.model';
 import UserNotFoundException from '../../_base/_security/_exceptions/userNotFound.exception';
 import TokenData from '../../_base/_security/_interfaces/tokenData.interface';
+import applicationContext from '../../application.context';
 export class BaseUserService<T extends BaseUserModel> extends Service<T> {
   protected repository: Repository<T>;
   private modelClass: any;
 
-  constructor(conn: Connection, modelClass?: new () => T) {
-    super(conn);
+  constructor(modelClass?: new () => T) {
+    super(applicationContext.connection);
     this.modelClass = modelClass ? modelClass : BaseUserModel;
   }
 
@@ -57,7 +58,7 @@ export class BaseUserService<T extends BaseUserModel> extends Service<T> {
     pass: string
   ): Promise<{ user: T; token: string; cookie: string }> => {
     try {
-      return UserProvider.login<T>(this.connection, this.modelClass, username, pass);
+      return await UserProvider.login<T>(this.connection, this.modelClass, username, pass);
     } catch (e) {
       throw e;
     }
@@ -73,7 +74,7 @@ export class BaseUserService<T extends BaseUserModel> extends Service<T> {
 
   public remove = async (id: string): Promise<boolean> => {
     try {
-      return UserProvider.remove(this.connection, this.modelClass, id);
+      return await UserProvider.remove(this.connection, this.modelClass, id);
     } catch (e) {
       throw e;
     }

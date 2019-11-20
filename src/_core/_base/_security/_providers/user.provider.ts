@@ -1,4 +1,9 @@
-import { UpdateResult, DeleteResult, Repository, Connection } from 'typeorm';
+import {
+  DeleteResult,
+  Repository,
+  Connection,
+  DeepPartial
+} from 'typeorm';
 import { BaseUserModel } from '../../../_auth/_models/user.model';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
@@ -41,6 +46,9 @@ export class UserProvider {
       const saved: U = await repository.save(element as any);
       return saved;
     } catch (e) {
+      if (e.code === 11000) {
+        throw new InvalidUserDataException();
+      }
       throw e;
     }
   }
@@ -49,25 +57,22 @@ export class UserProvider {
     connection: Connection,
     modelClass: new () => U,
     id: string,
-    data: any
+    data: { [key: string]: any }
   ): Promise<U> {
     try {
       const repository = connection.getRepository(modelClass);
       const element: U = await UserProvider.find<U>(connection, modelClass, id);
       if (element) {
-        const user: U = repository.merge(element, data);
-        const updated: UpdateResult = await repository.update(
-          element.id,
-          user as any
-        );
-        if (updated.affected) {
-          return await UserProvider.find<U>(connection, modelClass, id);
-        }
-        throw new InvalidUserDataException();
+        element.username = data.username ? data.username : element.username;
+        element.email = data.email ? data.email : element.email;
+        return await repository.save(element as unknown as DeepPartial<U>);
       }
       throw new UserNotFoundException();
     } catch (e) {
-      throw e;
+      if (e.code === 11000) {
+        throw new InvalidUserDataException();
+      }
+      throw new InvalidUserDataException();
     }
   }
 
@@ -79,8 +84,9 @@ export class UserProvider {
     try {
       const repository = connection.getRepository(modelClass);
       const element = await UserProvider.find<U>(connection, modelClass, id);
-      const deleted: DeleteResult = await repository.delete(element.id);
-      if (deleted.affected) {
+      const deleted: DeleteResult = await repository.delete(id);
+      console.log(deleted);
+      if (deleted) {
         return true;
       }
       throw new HttpException(500, 'Operation Fail!!!');

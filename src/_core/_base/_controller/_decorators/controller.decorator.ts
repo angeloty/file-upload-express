@@ -1,10 +1,10 @@
-export const controller = (prefix: string = ''): ClassDecorator => {
+export const Controller = (config: {path: string}): ClassDecorator => {
   return (target: Function) => {
     console.log(`Controller: ${target.name} ......... Initializing`);
     target.prototype.getPath = () => {
-      return prefix;
+      return config.path;
     };
   };
 };
 
-export default controller;
+export default Controller;
